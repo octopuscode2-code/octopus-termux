@@ -15,8 +15,10 @@ git config --global --unset credential.helper 2>/dev/null
 # ---------- Root Check ----------
 if [ "$EUID" -eq 0 ]; then
     IS_ROOT=true
+    MODE="ROOT MODE"
 else
     IS_ROOT=false
+    MODE="USER MODE"
 fi
 
 # ---------- Colors ----------
@@ -42,8 +44,9 @@ cat << EOF
     |_|\___/ \__,_|___/\___|_|   /_/    \_\_/___\___/ \__, |_.__/ \__, | 
                                                        __/ |       __/ | 
                                                       |___/       |___/  
+
                Yousef Alzogby
-               _____________
+               ${MODE}
 EOF
 }
 
@@ -55,7 +58,6 @@ cat << EOF
  \        /|   ||     \   |   | 
   \__/\  / |___|\___  /   |___| 
        \/           \/          
-
 EOF
 }
 
@@ -63,9 +65,15 @@ EOF
 full_update() {
   clear
   echo -e "${YELLOW}=== Full System Update & Setup ===${NC}\n"
-  apt update -y && apt upgrade -y
-  apt install -y python3 python wget curl nano vim openssh nmap net-tools iproute2 clang make
-  echo -e "\n${GREEN}✔ System Ready${NC}"
+
+  if [ "$IS_ROOT" = true ]; then
+      apt update -y && apt upgrade -y
+      apt install -y python3 python wget curl nano vim openssh nmap net-tools iproute2 clang make
+      echo -e "\n${GREEN}✔ System Ready${NC}"
+  else
+      echo -e "${RED}[!] This option requires ROOT${NC}"
+  fi
+
   pause
 }
 
@@ -73,8 +81,8 @@ full_update() {
 network_scan() {
   clear
   header_wifi
-  echo -e "${RED}=== Local Network Scan ===${NC}\n"
-  nmap -sn 192.168.1.0/24
+  echo -e "${BLUE}=== Local Network Scan ===${NC}\n"
+  nmap -sn 192.168.1.0/24 2>/dev/null
   pause
 }
 
@@ -84,7 +92,7 @@ about_creator() {
   echo -e "${PURPLE}=== About The Creator ===${NC}\n"
   echo "👨‍💻 Engineer : Yousef Alzogby"
   echo "🎂 Age       : 21"
-  echo "📍 Location  : Cairo, Egypt🇪🇬"
+  echo "📍 Location  : Cairo, Egypt 🇪🇬"
   echo "📞 Contact   : +201093740413"
   pause
 }
@@ -96,16 +104,18 @@ menu() {
     echo -e "${GREEN}"
     header_main
     echo -e "${NC}"
-    echo -e "${YELLOW}1) Full System Update${NC}"
-    echo -e "${BLUE}2) Network Scan${NC}"
-    echo -e "${PURPLE}3) About${NC}"
-    echo -e "${RED}4) Exit${NC}"
+
+    echo -e "${YELLOW}1) Full System Update 🆙${NC}"
+    echo -e "${BLUE}2) Network Scan 🛜${NC}"
+    echo -e "${PURPLE}3) About 🆔${NC}"
+    echo -e "${RED}4) Exit ❌${NC}"
+
     read -p "Select option: " opt
 
     case "$opt" in
-      1) full_update🆙 ;;
-      2) network_scan🛜 ;;
-      3) about_creator🆔 ;;
+      1) full_update ;;
+      2) network_scan ;;
+      3) about_creator ;;
       4) exit 0 ;;
       *) echo "Invalid option"; sleep 1 ;;
     esac
