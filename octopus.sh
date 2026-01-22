@@ -5,19 +5,22 @@
 # Author: Yousef Alzogby
 # ===============================
 
-# ---------- Disable GitHub Auth ----------
+# ---------- Git Safety ----------
 export GIT_TERMINAL_PROMPT=0
-unset GIT_ASKPASS
-unset SSH_ASKPASS
+unset GIT_ASKPASS SSH_ASKPASS
 rm -f ~/.git-credentials 2>/dev/null
 git config --global --unset credential.helper 2>/dev/null
 
-# ---------- Root Check ----------
-if [ "$EUID" -eq 0 ]; then
-    IS_ROOT=true
+# ---------- Detect Environment ----------
+IS_ROOT=false
+IS_TERMUX=false
+
+[ "$EUID" -eq 0 ] && IS_ROOT=true
+[ -d "$PREFIX" ] && IS_TERMUX=true
+
+if $IS_ROOT; then
     MODE="ROOT MODE"
 else
-    IS_ROOT=false
     MODE="USER MODE"
 fi
 
@@ -33,67 +36,65 @@ pause() {
   read -p "Press Enter to return..."
 }
 
-# ---------- Headers ----------
+# ---------- Header ----------
 header_main() {
-cat << EOF
-  __     __       🇪🇬           __            _                _            
- \ \   / /                  / _|     /\   | |              | |           
-  \ \_/ /__  _   _ ___  ___| |_     /  \  | |_______   __ _| |__  _   _  
-   \   / _ \| | | / __|/ _ \  _|   / /\ \ | |_  / _ \ / _` | '_ \| | | | 
-    | | (_) | |_| \__ \  __/ |    / ____ \| |/ / (_) | (_| | |_) | |_| | 
-    |_|\___/ \__,_|___/\___|_|   /_/    \_\_/___\___/ \__, |_.__/ \__, | 
-                                                       __/ |       __/ | 
-                                                      |___/       |___/  
-
+cat << 'EOF'
+  __     __       🇪🇬           __            _                _
+ \ \   / /                  / _|     /\   | |              | |
+  \ \_/ /__  _   _ ___  ___| |_     /  \  | |_______   __ _| |__  _   _
+   \   / _ \| | | / __|/ _ \  _|   / /\ \ | |_  / _ \ / _` | '_ \| | | |
+    | | (_) | |_| \__ \  __/ |    / ____ \| |/ / (_) | (_| | |_) | |_| |
+    |_|\___/ \__,_|___/\___|_|   /_/    \_\_/___\___/ \__, |_.__/ \__, |
+                                                       __/ |       __/ |
+                                                      |___/       |___/
                Yousef Alzogby
-               ${MODE}
 EOF
+echo -e "               ${MODE}"
 }
 
-header_wifi() {
-cat << EOF
- __  🇪🇬   __.______________.___  
-/  \    /  \   \_   _____/|   | 
-\   \/\/   /   ||    __)  |   | 
- \        /|   ||     \   |   | 
-  \__/\  / |___|\___  /   |___| 
-       \/           \/          
-EOF
-}
-
-# ---------- Option 1 ----------
+# ---------- Update System ----------
 full_update() {
   clear
-  echo -e "${YELLOW}=== Full System Update & Setup ===${NC}\n"
+  echo -e "${YELLOW}=== System Update & Upgrade ===${NC}\n"
 
-  if [ "$IS_ROOT" = true ]; then
+  if $IS_TERMUX; then
+      pkg update -y && pkg upgrade -y
+      echo -e "${GREEN}✔ Termux Updated${NC}"
+
+  elif $IS_ROOT; then
       apt update -y && apt upgrade -y
-      apt install -y python3 python wget curl nano vim openssh nmap net-tools iproute2 clang make
-      echo -e "\n${GREEN}✔ System Ready${NC}"
+      echo -e "${GREEN}✔ System Updated (Root)${NC}"
+
   else
-      echo -e "${RED}[!] This option requires ROOT${NC}"
+      echo -e "${BLUE}[i] Non-root mode detected${NC}"
+      echo "    Packages cannot be upgraded without root."
+      echo "    You can run this tool using: sudo ./octopus.sh"
   fi
 
   pause
 }
 
-# ---------- Option 2 ----------
+# ---------- Network Scan ----------
 network_scan() {
   clear
-  header_wifi
   echo -e "${BLUE}=== Local Network Scan ===${NC}\n"
-  nmap -sn 192.168.1.0/24 2>/dev/null
+
+  if command -v nmap >/dev/null 2>&1; then
+      nmap -sn 192.168.1.0/24 2>/dev/null
+  else
+      echo -e "${RED}[!] nmap not installed${NC}"
+  fi
+
   pause
 }
 
-# ---------- Option 3 ----------
+# ---------- About ----------
 about_creator() {
   clear
-  echo -e "${PURPLE}=== About The Creator ===${NC}\n"
+  echo -e "${PURPLE}=== About ===${NC}\n"
   echo "👨‍💻 Engineer : Yousef Alzogby"
-  echo "🎂 Age       : 21"
-  echo "📍 Location  : Cairo, Egypt 🇪🇬"
-  echo "📞 Contact   : +201093740413"
+  echo "📍 Cairo, Egypt 🇪🇬"
+  echo "🔐 Cyber & Linux Enthusiast"
   pause
 }
 
@@ -105,8 +106,8 @@ menu() {
     header_main
     echo -e "${NC}"
 
-    echo -e "${YELLOW}1) Full System Update 🆙${NC}"
-    echo -e "${BLUE}2) Network Scan 🛜${NC}"
+    echo -e "${YELLOW}1) System Update & Upgrade 🔄${NC}"
+    echo -e "${BLUE}2) Network Scan 📡${NC}"
     echo -e "${PURPLE}3) About 🆔${NC}"
     echo -e "${RED}4) Exit ❌${NC}"
 
