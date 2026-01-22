@@ -18,6 +18,7 @@ YELLOW='\033[1;33m'
 RED='\033[1;31m'
 BLUE='\033[1;34m'
 CYAN='\033[1;36m'
+PURPLE='\033[1;35m'
 NC='\033[0m'
 
 pause() {
@@ -47,15 +48,42 @@ full_update() {
   clear
   echo -e "${YELLOW}🔄 === System Update & Upgrade ===${NC}\n"
 
-  if $IS_ROOT; then
-    apt update -y && apt upgrade -y
-    echo -e "\n${GREEN}✅ System Updated Successfully${NC}"
+  PACKAGES=(
+    git
+    curl
+    wget
+    nmap
+    openssh
+    net-tools
+    iproute2
+    nano
+    vim
+    figlet
+    python3
+  )
+
+  if command -v apt >/dev/null 2>&1; then
+      if $IS_ROOT; then
+          echo -e "${GREEN}👑 ROOT MODE detected${NC}"
+          apt update -y
+          apt upgrade -y
+          apt install -y "${PACKAGES[@]}"
+      else
+          echo -e "${BLUE}👤 USER MODE detected${NC}"
+          echo -e "${CYAN}⚡ Installing packages without ROOT...${NC}"
+          apt update
+          apt upgrade -y
+          apt install -y "${PACKAGES[@]}"
+      fi
+
+      echo -e "\n${GREEN}✅ All required packages installed successfully${NC}"
   else
-    echo -e "${RED}❌ Update & Upgrade require ROOT${NC}"
+      echo -e "${RED}❌ Package manager (apt) not found${NC}"
   fi
 
   pause
 }
+    
 
 # ---------- Network Banner ----------
 header_network() {
