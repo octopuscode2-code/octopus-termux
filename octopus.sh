@@ -13,9 +13,10 @@ rm -f ~/.git-credentials 2>/dev/null
 git config --global --unset credential.helper 2>/dev/null
 
 # ---------- Root Check ----------
-if [ "$EUID" -ne 0 ]; then
-  echo -e "\033[1;31m[!] Please run Octopus Tool as ROOT\033[0m"
-  exit 1
+if [ "$EUID" -eq 0 ]; then
+    IS_ROOT=true
+else
+    IS_ROOT=false
 fi
 
 # ---------- Colors ----------
