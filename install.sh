@@ -1,5 +1,10 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
+# ===============================
+# 🐙 Octopus Tool Installer
+# 👨‍💻 Author: Yousef Alzogby
+# ===============================
+
 GREEN='\033[1;32m'
 YELLOW='\033[1;33m'
 RED='\033[1;31m'
@@ -9,9 +14,9 @@ clear
 echo -e "${GREEN}🐙 Octopus Tool Installer${NC}"
 echo "================================="
 
-# Check Termux environment
+# Check Termux
 if [ -z "$PREFIX" ]; then
-  echo -e "${RED}❌ This installer must be run inside Termux${NC}"
+  echo -e "${RED}❌ This installer is for Termux only${NC}"
   exit 1
 fi
 
@@ -21,40 +26,32 @@ pkg update -y && pkg upgrade -y
 
 # Install dependencies
 echo -e "${YELLOW}📦 Installing required packages...${NC}"
-pkg install -y python python3 git wget curl nmap net-tools
+pkg install -y git wget curl nmap python figlet net-tools
 
-# Create install folder
-INSTALL_DIR="$HOME/octopus-tool"
+# Paths
+INSTALL_DIR="$HOME/octopus-termux"
 BIN_DIR="$PREFIX/bin"
 
-if [ -d "$INSTALL_DIR" ]; then
-  echo -e "${YELLOW}⚠ Existing installation found. Updating...${NC}"
-else
-  mkdir -p "$INSTALL_DIR"
+# Check main script
+if [ ! -f "$INSTALL_DIR/octopus.sh" ]; then
+  echo -e "${RED}❌ octopus.sh not found in $INSTALL_DIR${NC}"
+  exit 1
 fi
 
-# Copy main script placeholder
-echo -e "${GREEN}✏ Creating placeholder octopus.sh${NC}"
-cat << EOF > "$INSTALL_DIR/octopus.sh"
-#!/data/data/com.termux/files/usr/bin/bash
-echo "🐙 Octopus Tool Placeholder — add your octopus.sh code here"
-EOF
-
+# Permissions
 chmod +x "$INSTALL_DIR/octopus.sh"
 
-# Create global command
-if [ ! -f "$BIN_DIR/octopus" ]; then
-  echo -e "${GREEN}🔗 Creating command: octopus${NC}"
-  cat << EOF > "$BIN_DIR/octopus"
+# Create command
+echo -e "${GREEN}🔗 Creating command: octopus${NC}"
+rm -f "$BIN_DIR/octopus"
+cat << EOF > "$BIN_DIR/octopus"
 #!/data/data/com.termux/files/usr/bin/bash
 bash "$INSTALL_DIR/octopus.sh"
 EOF
-  chmod +x "$BIN_DIR/octopus"
-else
-  echo -e "${YELLOW}ℹ Command 'octopus' already exists${NC}"
-fi
+
+chmod +x "$BIN_DIR/octopus"
 
 echo
 echo -e "${GREEN}✅ Octopus Tool installed successfully!${NC}"
-echo -e "Run it anytime by typing: ${YELLOW}octopus${NC}"
+echo -e "👉 Run it anytime by typing: ${YELLOW}octopus${NC}"
 echo "================================="
